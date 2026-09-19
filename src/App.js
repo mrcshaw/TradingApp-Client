@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { generateStrategy, testStrategy } from './features/strategySlice';
 import { ClipboardCopy } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 import './App.css';
 
 function App() {
@@ -11,6 +12,13 @@ function App() {
   const [description, setDescription] = useState('Buy when RSI crosses below 30');
   const [symbol, setSymbol] = useState('ES=F');
   const [quantity, setQuantity] = useState(1);
+  
+  // Keep local state for editors so users can manually edit before testing
+  const [localPythonScript, setLocalPythonScript] = useState('');
+  
+  useEffect(() => {
+    setLocalPythonScript(pythonScript);
+  }, [pythonScript]);
 
   const handleGenerate = (e) => {
     e.preventDefault();
@@ -18,8 +26,8 @@ function App() {
   };
 
   const handleTest = () => {
-    if (pythonScript) {
-      dispatch(testStrategy({ pythonScript, symbol }));
+    if (localPythonScript) {
+      dispatch(testStrategy({ pythonScript: localPythonScript, symbol }));
     } else {
       alert("No Python script generated yet. Please generate the strategy first.");
     }
@@ -34,7 +42,7 @@ function App() {
     <div className="App">
       <header className="header">
         <h1>TradingApp Strategy Studio</h1>
-        <p>Powered by Google Gemma 5 & VectorBT</p>
+        <p>Powered by Qwen 2.5 Coder & VectorBT</p>
       </header>
 
       <main className="main-content">
@@ -71,7 +79,7 @@ function App() {
             </div>
 
             <button type="submit" disabled={status === 'loading'}>
-              {status === 'loading' ? 'Generating with Gemma 5...' : 'Generate Strategy'}
+              {status === 'loading' ? 'Generating with Qwen...' : 'Generate Strategy'}
             </button>
             
             {error && <div style={{color: 'red', marginTop: '10px'}}>Error: {JSON.stringify(error)}</div>}
@@ -95,9 +103,20 @@ function App() {
                 <ClipboardCopy size={16} style={{marginRight: '5px'}}/> Copy
               </button>
             </div>
-            <pre>
-              {pineScript || "// Pine Script will appear here"}
-            </pre>
+            <div style={{ border: '1px solid #444', borderRadius: '4px', overflow: 'hidden' }}>
+              <Editor
+                height="350px"
+                defaultLanguage="javascript" // Pine Script isn't built-in, JS gives reasonable highlighting
+                theme="vs-dark"
+                value={pineScript || "// Pine Script will appear here"}
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14
+                }}
+              />
+            </div>
           </div>
 
           <div className="result-card">
@@ -116,9 +135,21 @@ function App() {
                 </button>
               </div>
             </div>
-            <pre>
-              {pythonScript || "# Python vectorized logic will appear here"}
-            </pre>
+            <div style={{ border: '1px solid #444', borderRadius: '4px', overflow: 'hidden' }}>
+              <Editor
+                height="250px"
+                defaultLanguage="python"
+                theme="vs-dark"
+                value={localPythonScript || "# Python vectorized logic will appear here"}
+                onChange={(value) => setLocalPythonScript(value)}
+                options={{
+                  readOnly: false,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14
+                }}
+              />
+            </div>
             {testError && <div style={{color: 'red', marginTop: '10px'}}>Test Error: {JSON.stringify(testError)}</div>}
           </div>
 

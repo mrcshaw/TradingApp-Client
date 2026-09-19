@@ -56,19 +56,36 @@ const strategySlice = createSlice({
       })
       .addCase(generateStrategy.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        // Note: Right now our Java backend just dumps Gemma's raw text into 'pineScript'.
-        // In a real structured JSON output from Gemma, we'd parse this.
-        // For MVP, if it returns raw JSON string, we can try to parse it.
         try {
-           const parsed = JSON.parse(action.payload.pineScript);
-           state.pineScript = parsed.pineScript || '';
-           state.pythonScript = parsed.pythonScript || '';
+           let rawText = action.payload.pineScript || action.payload;
+           
+           // Strategy 1: The AI returned standard markdown json ```json ... ```
+           let match = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+           let jsonStr = match ? match[1] : rawText;
+
+           // Strategy 2: Some models like Gemma escape quotes and add random backticks (e.g. ` instead of ") inside the JSON values.
+           // To be absolutely robust against erratic local LLM outputs, we will perform a safe eval if JSON.parse fails.
+           let parsed;
+           try {
+               parsed = JSON.parse(jsonStr);
+           } catch (e) {
+               // Fallback: use a safe function constructor to evaluate the string if it's formatted as a Javascript object
+               // This handles cases where Gemma uses backticks for multiline strings instead of standard JSON formatting
+               parsed = new Function('return ' + jsonStr)();
+           }
+           
+           // Format Pine Script to ensure it looks clean if escaped characters are present
+           const rawPine = parsed.pineScript || '';
+           state.pineScript = rawPine.replace(/\\n/g, '\n');
+           
+           const rawPython = parsed.pythonScript || '';
+           state.pythonScript = rawPython.replace(/\\n/g, '\n');
+           
            state.explanation = parsed.explanation || '';
         } catch (e) {
-           // Fallback to dumping whatever the LLM returned into pineScript
-           state.pineScript = action.payload.pineScript;
+           state.pineScript = action.payload.pineScript || action.payload;
            state.pythonScript = action.payload.pythonScript || '';
-           state.explanation = action.payload.explanation || 'Failed to parse JSON';
+           state.explanation = action.payload.explanation || 'Failed to parse JSON cleanly. See raw output in Pine Script box.';
         }
       })
       .addCase(generateStrategy.rejected, (state, action) => {

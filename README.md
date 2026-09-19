@@ -1,70 +1,63 @@
-# Getting Started with Create React App
+# Trading Application Client (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains the React + Redux frontend for the Trading Application. It connects to the backend analysis service to generate trading strategies via LLMs (Pine Script & Python) and displays the backtesting results.
 
-## Available Scripts
+## 🚀 Prerequisites
+Ensure you have the following installed on your host machine:
+*   **Node.js** (v18+ recommended) and **npm**
+*   (Optional) **Docker Desktop** (if you prefer to run it containerized)
 
-In the project directory, you can run:
+*Note: The backend microservices (Java & Python) from the main `TradingApp` repository must be running for full functionality.*
 
-### `npm start`
+## 🏃 Getting Started (Local Development)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Install Dependencies
+Open a terminal and navigate to the project directory:
+```powershell
+cd C:\Development\TradingApp-Client
+npm install
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2. Start the React Application
+```powershell
+npm start
+```
+The application will open in your default browser at `http://localhost:3000`. Hot-reloading is enabled, so changes to the code will immediately reflect in the browser.
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🐳 Getting Started (Docker)
 
-### `npm run build`
+If you prefer to run the frontend isolated in a Docker container:
+```powershell
+cd C:\Development\TradingApp-Client
+docker build -t trading-app-client .
+docker run -p 3000:3000 trading-app-client
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 💾 Committing & Pushing to GitHub
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+To save your work and push updates to the frontend repository:
 
-### `npm run eject`
+```powershell
+cd C:\Development\TradingApp-Client
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# View changed files
+git status
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Stage all changes
+git add .
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Commit changes with a descriptive message
+git commit -m "feat: updated frontend UI"
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Push to the main branch
+git push origin main
+```
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🔌 Backend Integration
+The frontend expects the Java `Analysis Service` to be running at `http://localhost:8082`. API requests are made using Axios in the Redux slices (e.g., `src/features/strategySlice.js`). Ensure CORS is enabled on the backend to allow requests from `http://localhost:3000`.
